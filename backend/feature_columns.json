@@ -1,0 +1,19 @@
+{
+  "features": [
+    "url_length",
+    "n_dots",
+    "n_hypens",
+    "n_underline",
+    "n_slash",
+    "n_questionmark",
+    "n_equal",
+    "n_at",
+    "n_and",
+    "n_exclamation"
+  ],
+  "target": "phishing",
+  "model_version": "1.0.0",
+  "training_samples": 80061,
+  "test_samples": 20016,
+  "accuracy": 0.8843425259792166
+}
