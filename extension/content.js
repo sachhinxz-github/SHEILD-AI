@@ -1,12 +1,3 @@
-/**
- * SHIELD_AI - Content Script
- * Runs on web pages to detect and warn about potential phishing
- */
-
-// Log content script activation
-console.log('🛡️ SHIELD_AI content script loaded');
-
-// Listen for messages from background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'CHECK_PAGE') {
     analyzeCurrentPage();
@@ -14,9 +5,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-/**
- * Analyze the current page URL
- */
 async function analyzeCurrentPage() {
   const currentUrl = window.location.href;
   
@@ -40,9 +28,6 @@ async function analyzeCurrentPage() {
   }
 }
 
-/**
- * Check if we should skip analysis for this URL
- */
 function shouldSkipAnalysis(url) {
   // Skip local files, chrome pages, and already analyzed pages
   const skipPatterns = [
@@ -58,9 +43,6 @@ function shouldSkipAnalysis(url) {
   return skipPatterns.some(pattern => new RegExp(pattern).test(url));
 }
 
-/**
- * Show warning overlay for phishing sites
- */
 function showWarning(analysisData) {
   // Check if warning already exists
   if (document.getElementById('shield-ai-warning')) {
@@ -195,15 +177,13 @@ function showWarning(analysisData) {
   });
 }
 
-// Auto-analyze on page load if enabled
 (async () => {
   try {
     const settings = await chrome.runtime.sendMessage({ type: 'GET_SETTINGS' });
     if (settings.success && settings.data.autoAnalyze) {
-      // Small delay to avoid interfering with page load
       setTimeout(analyzeCurrentPage, 1000);
     }
   } catch (error) {
-    console.error('SHIELD_AI: Could not get settings', error);
+    console.error('Could not get settings', error);
   }
 })();

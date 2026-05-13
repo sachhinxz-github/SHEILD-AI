@@ -1,5 +1,4 @@
 def extract_features(url):
-    """Extract features from URL matching the training dataset columns."""
     return {
         'url_length': len(url),
         'n_dots': url.count('.'),

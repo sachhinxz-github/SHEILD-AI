@@ -1,21 +1,10 @@
-/**
- * SHIELD_AI - Background Service Worker
- * Handles URL analysis and communication between content script and popup
- */
-
-// Default API URL - can be changed in settings
 const DEFAULT_API_URL = 'http://localhost:5000';
-const API_TIMEOUT = 10000; // 10 seconds timeout
+const API_TIMEOUT = 10000;
 
-// Cache for analysis results
 const analysisCache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+const CACHE_TTL = 5 * 60 * 1000;
 
-// Initialize extension
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('🛡️ SHIELD_AI extension installed');
-  
-  // Set default settings
   chrome.storage.local.set({
     apiUrl: DEFAULT_API_URL,
     autoAnalyze: true,
@@ -24,16 +13,13 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-// Message handler for communication with popup and content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('📨 Message received:', request.type);
-  
   switch (request.type) {
     case 'ANALYZE_URL':
       analyzeUrl(request.data.url)
         .then(result => sendResponse({ success: true, data: result }))
         .catch(error => sendResponse({ success: false, error: error.message }));
-      return true; // Keep channel open for async response
+      return true;
     
     case 'GET_API_STATUS':
       checkApiStatus()
@@ -62,9 +48,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-/**
- * Check if URL is in cache
- */
 function getCachedResult(url) {
   const cached = analysisCache.get(url);
   if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
@@ -74,9 +57,6 @@ function getCachedResult(url) {
   return null;
 }
 
-/**
- * Cache analysis result
- */
 function cacheResult(url, result) {
   analysisCache.set(url, {
     result,
@@ -84,24 +64,16 @@ function cacheResult(url, result) {
   });
 }
 
-/**
- * Analyze a URL for phishing
- */
 async function analyzeUrl(url) {
-  // Check cache first
   const cached = getCachedResult(url);
   if (cached) {
-    console.log('✅ Using cached result for:', url);
     return { ...cached, cached: true };
   }
   
-  // Get API URL from settings
   const settings = await new Promise(resolve => {
     chrome.storage.local.get(['apiUrl'], resolve);
   });
   const apiUrl = settings.apiUrl || DEFAULT_API_URL;
-  
-  console.log('🔍 Analyzing URL:', url);
   
   try {
     const controller = new AbortController();
@@ -123,18 +95,13 @@ async function analyzeUrl(url) {
     const result = await response.json();
     cacheResult(url, result);
     
-    console.log('✅ Analysis complete:', result);
     return { ...result, cached: false };
     
   } catch (error) {
-    console.error('❌ Analysis failed:', error.message);
     throw error;
   }
 }
 
-/**
- * Check if API is available
- */
 async function checkApiStatus() {
   const settings = await new Promise(resolve => {
     chrome.storage.local.get(['apiUrl'], resolve);
@@ -159,9 +126,6 @@ async function checkApiStatus() {
   }
 }
 
-/**
- * Show notification
- */
 async function showNotification(title, message, type = 'info') {
   const settings = await new Promise(resolve => {
     chrome.storage.local.get(['showNotifications'], resolve);
@@ -169,20 +133,11 @@ async function showNotification(title, message, type = 'info') {
   
   if (!settings.showNotifications) return;
   
-  const icons = {
-    safe: 'icons/icon128.png',
-    warning: 'icons/icon128.png',
-    danger: 'icons/icon128.png',
-    info: 'icons/icon128.png'
-  };
-  
   chrome.notifications.create({
     type: 'basic',
-    iconUrl: icons[type] || icons.info,
+    iconUrl: 'icons/icon128.png',
     title,
     message,
     priority: 2
   });
 }
-
-console.log('🛡️ SHIELD_AI background service worker ready');
